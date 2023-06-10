@@ -28,6 +28,7 @@ from geoservice.features.serializers import FeatureGeneralSerializer, FeatureUpd
 from utils.logger.Error import ErrorLogger
 from utils.pagination.paginator import FeaturePagination
 from utils.response.wrapper import ResponseWrapper
+from utils.constants import *
 
 
 class FeatureBaseAPIView:
@@ -73,12 +74,18 @@ class FeatureListAPIView(FeatureBaseAPIView, generics.ListAPIView):
             self.get_serializer()
             response = super().get(request, *args, **kwargs)
             return Response(
-                **self.response_wrapper('S207', response.data).formatted_output_success()
+                **self.response_wrapper(
+                    SUCCESS_CODES.get(
+                        'FEATURE_LIST_SUCCESS', DEFAULT_SUCCESS_CODE
+                    ), response.data
+                ).formatted_output_success()
             )
         except Exception as err:
             self.error_logger.log_unexpected_error(err, dict(), 'E500', request.get_full_path())
             return Response(
-                **self.response_wrapper('E500').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('UNKNOWN_ERROR', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
 
     def get_queryset(self):
@@ -123,44 +130,24 @@ class FeatureRetrieveUpdateDestroyAPIView(FeatureBaseAPIView, generics.RetrieveU
         try:
             response = self.retrieve(request, *args, **kwargs)
             return Response(
-                **self.response_wrapper('S208', response.data).formatted_output_success()
+                **self.response_wrapper(
+                    SUCCESS_CODES.get(
+                        'FEATURE_RETRIEVE_SUCCESS', DEFAULT_SUCCESS_CODE
+                    ),
+                    response.data).formatted_output_success()
             )
         except Http404:
             return Response(
-                **self.response_wrapper('E403').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('FEATURE_INVALID_ID', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
         except Exception as err:
             self.error_logger.log_unexpected_error(err, dict(), 'E500', request.get_full_path())
             return Response(
-                **self.response_wrapper('E500').formatted_output_error()
-            )
-
-    def put(self, request, *args, **kwargs):
-        """
-        Handle PUT requests to update a single feature.
-
-        Parameters:
-        - request: The HTTP request object.
-        - args: Additional positional arguments.
-        - kwargs: Additional keyword arguments.
-
-        Returns:
-        - Response: The HTTP response indicating the success of the update.
-
-        """
-        try:
-            response = self.update(request, *args, **kwargs)
-            return Response(
-                **self.response_wrapper('S211', response.data).formatted_output_success()
-            )
-        except Http404:
-            return Response(
-                **self.response_wrapper('E403').formatted_output_error()
-            )
-        except Exception as err:
-            self.error_logger.log_unexpected_error(err, dict(), 'E500', request.get_full_path())
-            return Response(
-                **self.response_wrapper('E500').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('UNKNOWN_ERROR', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
 
     def patch(self, request, *args, **kwargs):
@@ -179,16 +166,24 @@ class FeatureRetrieveUpdateDestroyAPIView(FeatureBaseAPIView, generics.RetrieveU
         try:
             response = self.partial_update(request, *args, **kwargs)
             return Response(
-                **self.response_wrapper('S209', response.data).formatted_output_success()
+                **self.response_wrapper(
+                    SUCCESS_CODES.get(
+                        'FEATURE_UPDATE_SUCCESS', DEFAULT_SUCCESS_CODE
+                    ), response.data
+                ).formatted_output_success()
             )
         except Http404:
             return Response(
-                **self.response_wrapper('E403').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('FEATURE_INVALID_ID', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
         except Exception as err:
             self.error_logger.log_unexpected_error(err, dict(), 'E500', request.get_full_path())
             return Response(
-                **self.response_wrapper('E500').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('UNKNOWN_ERROR', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
 
     def delete(self, request, *args, **kwargs):
@@ -207,14 +202,20 @@ class FeatureRetrieveUpdateDestroyAPIView(FeatureBaseAPIView, generics.RetrieveU
         try:
             response = self.destroy(request, *args, **kwargs)
             return Response(
-                **self.response_wrapper('S210', response.data).formatted_output_success()
+                **self.response_wrapper(
+                    SUCCESS_CODES.get('FEATURE_DELETE_SUCCESS', DEFAULT_SUCCESS_CODE),
+                    response.data).formatted_output_success()
             )
         except Http404:
             return Response(
-                **self.response_wrapper('E403').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('FEATURE_INVALID_ID', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
         except Exception as err:
             self.error_logger.log_unexpected_error(err, dict(), 'E500', request.get_full_path())
             return Response(
-                **self.response_wrapper('E500').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('UNKNOWN_ERROR', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )

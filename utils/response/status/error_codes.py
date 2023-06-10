@@ -12,6 +12,16 @@ class ErrorCodes:
         return self.__error_dict
 
     @property
+    def data_validation_error(self):
+        return dict(
+            http_status=400,
+            state_code="E400",
+            state_message={
+                "en": "Data Validation Error."
+            }
+        )
+
+    @property
     def get_default_error_dict(self) -> dict:
         return self.__error_dict["E500"]
 
@@ -19,19 +29,9 @@ class ErrorCodes:
     def geo_json_file_upload_error(self):
         return dict(
             http_status=400,
-            state_code="GJU4001",
+            state_code="E401",
             state_message={
                 "en": "Geo Json File Upload Error."
-            }
-        )
-
-    @property
-    def data_validation_error(self):
-        return dict(
-            http_status=400,
-            state_code="DVE4000",
-            state_message={
-                "en": "Data Validation Error."
             }
         )
 
@@ -39,7 +39,7 @@ class ErrorCodes:
     def geo_json_file_invalid_id(self):
         return dict(
             http_status=400,
-            state_code="GJI4002",
+            state_code="E402",
             state_message={
                 "en": "Invalid Id Given."
             }
@@ -49,7 +49,7 @@ class ErrorCodes:
     def feature_invalid_id(self):
         return dict(
             http_status=400,
-            state_code="FII4003",
+            state_code="E403",
             state_message={
                 "en": "Invalid Feature Id Given."
             }
@@ -59,7 +59,7 @@ class ErrorCodes:
     def get_unknown_error(self):
         return dict(
             http_status=400,
-            state_code="UNK5000",
+            state_code="E500",
             state_message={
                 "en": "Something Went Wrong."
             }

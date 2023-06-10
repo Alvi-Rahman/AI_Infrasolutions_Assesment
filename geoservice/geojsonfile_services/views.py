@@ -31,6 +31,7 @@ from utils.geo_json_parser.upload_file import GeoFileUploader
 from utils.logger.Error import ErrorLogger
 from utils.pagination.paginator import FeaturePagination
 from utils.response.wrapper import ResponseWrapper
+from utils.constants import *
 
 
 class GeoJsonBaseAPIView(GenericAPIView):
@@ -97,7 +98,11 @@ class GeoJsonFileUploadView(GeoJsonBaseAPIView):
 
             if not serializer.is_valid():
                 return Response(
-                    **self.response_wrapper('E400').formatted_output_error()
+                    **self.response_wrapper(
+                        ERROR_CODES.get(
+                            'DATA_VALIDATION_ERROR', DEFAULT_ERROR_CODE
+                        )
+                    ).formatted_output_error()
                 )
 
             geo_json_file = serializer.validated_data.pop("geo_json_file")
@@ -107,20 +112,32 @@ class GeoJsonFileUploadView(GeoJsonBaseAPIView):
                 self.error_logger.log_unexpected_error(response, dict(), 'E500',
                                                        request.get_full_path())
                 return Response(
-                    **self.response_wrapper('E401').formatted_output_error()
+                    **self.response_wrapper(
+                        ERROR_CODES.get(
+                            'GEO_JSON_FILE_UPLOAD_ERROR', DEFAULT_ERROR_CODE
+                        )
+                    ).formatted_output_error()
                 )
 
             serializer.validated_data["geo_json_file"] = response
             serializer.save()
             return Response(
-                        **self.response_wrapper(
-                            'S201', self.response_serializer_class(serializer.validated_data).data).formatted_output_success()
-                    )
+                **self.response_wrapper(
+                    SUCCESS_CODES.get(
+                        'GEO_JSON_FILE_UPLOAD_SUCCESS', DEFAULT_SUCCESS_CODE
+                    ),
+                    self.response_serializer_class(
+                        serializer.validated_data
+                    ).data
+                ).formatted_output_success()
+            )
         except Exception as err:
             self.error_logger.log_unexpected_error(err, dict(), 'E500',
                                                    request.get_full_path())
             return Response(
-                **self.response_wrapper('E500').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('UNKNOWN_ERROR', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
 
 
@@ -154,13 +171,20 @@ class GeoJsonFileListView(GeoJsonBaseAPIView):
             serializer = self.get_serializer(page, many=True)
             paginated_response = self.get_paginated_response(serializer.data).data
             return Response(
-                **self.response_wrapper('S202', paginated_response).formatted_output_success()
+                **self.response_wrapper(
+                    SUCCESS_CODES.get(
+                        'GEO_JSON_FILE_LIST_SUCCESS', DEFAULT_SUCCESS_CODE
+                    )
+                    , paginated_response
+                ).formatted_output_success()
             )
         except Exception as err:
             self.error_logger.log_unexpected_error(err, dict(), 'E500',
                                                    request.get_full_path())
             return Response(
-                **self.response_wrapper('E500').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('UNKNOWN_ERROR', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
 
 
@@ -190,17 +214,26 @@ class GeoJsonFileRetrieveView(GeoJsonBaseAPIView):
             instance = self.get_object()
             serializer = self.get_serializer(instance)
             return Response(
-                **self.response_wrapper('S203', serializer.data).formatted_output_success()
+                **self.response_wrapper(
+                    SUCCESS_CODES.get(
+                        'GEO_JSON_FILE_RETRIEVE_SUCCESS', DEFAULT_SUCCESS_CODE
+                    ),
+                    serializer.data
+                ).formatted_output_success()
             )
         except Http404:
             return Response(
-                **self.response_wrapper('E402').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('GEO_JSON_FILE_INVALID_ID', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
         except Exception as err:
             self.error_logger.log_unexpected_error(err, dict(), 'E500',
                                                    request.get_full_path())
             return Response(
-                **self.response_wrapper('E500').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('UNKNOWN_ERROR', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
 
 
@@ -230,19 +263,28 @@ class GeoJsonFileDeleteView(GeoJsonBaseAPIView):
             instance = self.get_object()
             instance.delete()
             return Response(
-                **self.response_wrapper('S204',
-                                        {"data": f"{kwargs.get('id')} Successfully Deleted!"}
-                                        ).formatted_output_success()
+                **self.response_wrapper(
+                    SUCCESS_CODES.get(
+                        'GEO_JSON_FILE_DELETE_SUCCESS',
+                        DEFAULT_SUCCESS_CODE
+                    ), {
+                        "data": f"{kwargs.get('id')} Successfully Deleted!"
+                    }
+                ).formatted_output_success()
             )
         except Http404:
             return Response(
-                **self.response_wrapper('E402').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('GEO_JSON_FILE_INVALID_ID', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
         except Exception as err:
             self.error_logger.log_unexpected_error(err, dict(), 'E500',
                                                    request.get_full_path())
             return Response(
-                **self.response_wrapper('E500').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('UNKNOWN_ERROR', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
 
 
@@ -279,7 +321,11 @@ class GeoJsonFileUpdateView(GeoJsonBaseAPIView):
 
             if not serializer.is_valid():
                 return Response(
-                    **self.response_wrapper('E400').formatted_output_error()
+                    **self.response_wrapper(
+                        ERROR_CODES.get(
+                            'DATA_VALIDATION_ERROR', DEFAULT_ERROR_CODE
+                        )
+                    ).formatted_output_error()
                 )
 
             geo_json_file = serializer.validated_data.pop("geo_json_file", None)
@@ -304,19 +350,25 @@ class GeoJsonFileUpdateView(GeoJsonBaseAPIView):
                 instance._prefetched_objects_cache = {}
 
             return Response(
-                **self.response_wrapper('S205',
-                                        serializer.validated_data
-                                        ).formatted_output_success()
+                **self.response_wrapper(
+                    SUCCESS_CODES.get(
+                        'GEO_JSON_FILE_UPDATE_SUCCESS', DEFAULT_SUCCESS_CODE
+                    ), serializer.validated_data
+                ).formatted_output_success()
             )
         except Http404:
             return Response(
-                **self.response_wrapper('E402').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('GEO_JSON_FILE_INVALID_ID', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
         except Exception as err:
             self.error_logger.log_unexpected_error(err, dict(), 'E500',
                                                    request.get_full_path())
             return Response(
-                **self.response_wrapper('E500').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('UNKNOWN_ERROR', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
 
 
@@ -360,16 +412,24 @@ class ImportFileToFeatures(GeoJsonBaseAPIView):
 
             return Response(
                 **self.response_wrapper(
-                    'S206', {"data": f"{kwargs.get('id')} Successfully Imported as Features!"}
+                    SUCCESS_CODES.get(
+                        'DATA_INSERT_SUCCESS', DEFAULT_SUCCESS_CODE
+                    ), {
+                        "data": f"{kwargs.get('id')} Successfully Imported as Features!"
+                    }
                 ).formatted_output_success()
             )
         except Http404:
             return Response(
-                **self.response_wrapper('E402').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('GEO_JSON_FILE_INVALID_ID', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )
         except Exception as err:
             self.error_logger.log_unexpected_error(err, dict(), 'E500',
                                                    request.get_full_path())
             return Response(
-                **self.response_wrapper('E500').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('UNKNOWN_ERROR', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )

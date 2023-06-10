@@ -8,6 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from utils.auth.serializers import LogOutSerializer
 from utils.logger.Error import ErrorLogger
 from utils.response.wrapper import ResponseWrapper
+from utils.constants import *
 
 
 class LogoutAPIView(APIView):
@@ -29,12 +30,16 @@ class LogoutAPIView(APIView):
             logout(request)
             return Response(
                 **self.response_wrapper(
-                    'S2012', {'data': 'success'}
+                    SUCCESS_CODES.get(
+                        'LOG_OUT_SUCCESS', DEFAULT_SUCCESS_CODE
+                    ), {'data': 'success'}
                 ).formatted_output_success()
             )
         except Exception as err:
             self.error_logger.log_unexpected_error(err, dict(), 'E500',
                                                    request.get_full_path())
             return Response(
-                **self.response_wrapper('E500').formatted_output_error()
+                **self.response_wrapper(
+                    ERROR_CODES.get('UNKNOWN_ERROR', DEFAULT_ERROR_CODE)
+                ).formatted_output_error()
             )

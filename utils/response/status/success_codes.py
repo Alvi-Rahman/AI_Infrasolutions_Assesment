@@ -11,9 +11,8 @@ class SuccessCodes:
             "S207": self.feature_list_success,
             "S208": self.feature_retrieve_success,
             "S209": self.feature_update_success,
-            "S2010": self.feature_delete_success,
-            "S2011": self.feature_replace_success,
-            "S2012": self.log_out_success,
+            "S210": self.feature_delete_success,
+            "S211": self.log_out_success,
         }
 
     def get_success_dict(self):
@@ -27,9 +26,9 @@ class SuccessCodes:
     def default_success_response(self):
         return dict(
             http_status=200,
-            state_code="DSR2000",
+            state_code="S200",
             state_message={
-                "en": "Geo Json File Creation Successful"
+                "en": "Operation Successful"
             }
         )
 
@@ -37,7 +36,7 @@ class SuccessCodes:
     def geo_json_file_upload_success(self):
         return dict(
             http_status=201,
-            state_code="GJC2001",
+            state_code="S201",
             state_message={
                 "en": "Geo Json File Creation Successful"
             }
@@ -47,7 +46,7 @@ class SuccessCodes:
     def geo_json_file_list_success(self):
         return dict(
             http_status=200,
-            state_code="GJL2002",
+            state_code="S202",
             state_message={
                 "en": "Geo Json List Data Fetch Success"
             }
@@ -57,7 +56,7 @@ class SuccessCodes:
     def geo_json_file_retrieve_success(self):
         return dict(
             http_status=200,
-            state_code="GJR2003",
+            state_code="S203",
             state_message={
                 "en": "Geo Json Data Retrieve Success"
             }
@@ -67,7 +66,7 @@ class SuccessCodes:
     def geo_json_file_delete_success(self):
         return dict(
             http_status=200,
-            state_code="GJD2004",
+            state_code="S204",
             state_message={
                 "en": "Geo Json Data Delete Success"
             }
@@ -77,7 +76,7 @@ class SuccessCodes:
     def geo_json_file_update_success(self):
         return dict(
             http_status=200,
-            state_code="GJU2005",
+            state_code="S205",
             state_message={
                 "en": "Geo Json Data Update Success"
             }
@@ -87,7 +86,7 @@ class SuccessCodes:
     def data_insert_successful(self):
         return dict(
             http_status=200,
-            state_code="DIS2006",
+            state_code="S206",
             state_message={
                 "en": "Geo Json Data Update Success"
             }
@@ -97,7 +96,7 @@ class SuccessCodes:
     def feature_list_success(self):
         return dict(
             http_status=200,
-            state_code="FLS2007",
+            state_code="S207",
             state_message={
                 "en": "Geo Json Data Update Success"
             }
@@ -107,7 +106,7 @@ class SuccessCodes:
     def feature_retrieve_success(self):
         return dict(
             http_status=200,
-            state_code="FRS2008",
+            state_code="S208",
             state_message={
                 "en": "Geo Json Data Update Success"
             }
@@ -117,7 +116,7 @@ class SuccessCodes:
     def feature_update_success(self):
         return dict(
             http_status=200,
-            state_code="FUS2009",
+            state_code="S209",
             state_message={
                 "en": "Geo Json Data Update Success"
             }
@@ -127,17 +126,7 @@ class SuccessCodes:
     def feature_delete_success(self):
         return dict(
             http_status=200,
-            state_code="FDS2010",
-            state_message={
-                "en": "Geo Json Data Update Success"
-            }
-        )
-
-    @property
-    def feature_replace_success(self):
-        return dict(
-            http_status=200,
-            state_code="FRS2011",
+            state_code="S210",
             state_message={
                 "en": "Geo Json Data Update Success"
             }
@@ -147,7 +136,7 @@ class SuccessCodes:
     def log_out_success(self):
         return dict(
             http_status=200,
-            state_code="LOS2012",
+            state_code="S211",
             state_message={
                 "en": "Successfully Logged Out"
             }
