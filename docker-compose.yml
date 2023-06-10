@@ -1,0 +1,26 @@
+version: "3"
+services:
+  web:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    restart: on-failure
+  db:
+    image: postgis/postgis:13-3.1
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: aiinfrasolutions
+      POSTGRES_USER: postgis
+      POSTGRES_PASSWORD: StrongPassword
+    ports:
+      - "5432:5432"
+    restart: on-failure

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feature Edit</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Custom styles */
+        body {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light justify-content-lg-between">
+        <a class="navbar-brand" href="/features_list/">Feature List</a>
+        <button class="btn btn-outline-danger float-right my-2 my-sm-0"
+                onclick="logOut()">LogOut</button>
+    </nav>
+    <h1 class="text-center">Feature Edit</h1>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 offset-lg-3">
+                <form id="editForm">
+                    <div class="mb-3">
+                        <label for="nameInput" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="nameInput">
+                    </div>
+                    <div class="mb-3">
+                        <label for="colorInput" class="form-label">Color</label>
+                        <input type="text" class="form-control" id="colorInput">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const featureId = parseInt(location.href.split('/').slice(-1)[0]);
+
+        let token = localStorage.access;
+
+        if (token === null){
+            location.href = "{% url 'login-view' %}";
+        }
+
+        const headers = {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        };
+        fetch(`http://127.0.0.1:8000/main/features/${featureId}/`,
+            {
+                method: 'GET',
+                headers: headers,
+            }
+        )
+            .then(response => response.json())
+            .then(responseJson => {
+                let data = responseJson.data;
+                if (data) {
+                    populateForm(data);
+                } else {
+                    console.error('Invalid response format.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error.message);
+            });
+
+        // Function to populate the form fields with feature data
+        function populateForm(feature) {
+            const nameInput = document.getElementById('nameInput');
+            const colorInput = document.getElementById('colorInput');
+
+            nameInput.value = feature.name;
+            colorInput.value = feature.color;
+        }
+
+        // Submit form handler
+        const editForm = document.getElementById('editForm');
+        editForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const nameInput = document.getElementById('nameInput');
+            const colorInput = document.getElementById('colorInput');
+
+            const updatedFeature = {
+                name: nameInput.value,
+                color: colorInput.value
+            };
+
+            // Send the updated feature data to the server
+            fetch(`http://127.0.0.1:8000/main/features/${featureId}/`, {
+                method: 'PATCH',
+                headers: headers,
+                body: JSON.stringify(updatedFeature)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data) {
+                    alert('Feature updated successfully.');
+                    // Optionally redirect to the feature list page
+                    {#window.location.href = "{% url 'feature-edit' %}" + feature.id;#}
+                    location.reload();
+                } else {
+                    console.error('Invalid response format.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error.message);
+            });
+        });
+
+        function handleLogoutResponse(response) {
+            console.log(localStorage.refresh);
+
+            location.href = `http://${location.hostname}:${location.port}`
+        }
+
+        function logOut(){
+
+            let token = localStorage.access;
+
+            if (token === null) {
+                location.href = "{% url 'login-view' %}";
+            }
+
+            const headers = {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            };
+
+            fetch('/api/logout/', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({'refresh': localStorage.refresh}),
+            })
+                .then(response => response.json())
+                .then(handleLogoutResponse)
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Login Error!")
+                });
+        }
+    </script>
+</body>
+</html>

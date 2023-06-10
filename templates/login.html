@@ -1,0 +1,99 @@
+<!-- login.html -->
+<html>
+    <head>
+        <title>Login Page</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <style>
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+            }
+
+            .card {
+                max-width: 400px;
+                padding: 40px;
+            }
+
+            .card-title {
+                text-align: center;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            .form-group label {
+                font-weight: bold;
+            }
+
+            .form-control {
+                padding: 10px;
+            }
+
+            .btn-login {
+                width: 100%;
+                padding: 12px;
+            }
+        </style>
+    </head>
+    <body>
+    <div class="container">
+        <h1>Login</h1>
+
+        <div id="error-message" class="alert alert-danger" role="alert" style="display: none;"></div>
+
+        <div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <button onclick="loginUser()" type="submit" class="btn btn-primary">Login</button>
+        </div>
+    </div>
+
+    <script>
+        function handleLoginResponse(response) {
+            if (response.access) {
+                // Store the access token securely (e.g., in local storage)
+                localStorage.setItem('access', response.access);
+                localStorage.setItem('refresh', response.refresh);
+
+                // Redirect to the maps page
+                window.location.href = '/map/';
+            } else if (response.error) {
+                // Display the error message to the user
+                document.getElementById('error-message').innerText = response.error;
+                alert("Login Error");
+            }
+        }
+
+        function loginUser() {
+            {#event.preventDefault();#}
+
+            const username = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            fetch('/api/token/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({username, password}),
+            })
+                .then(response => response.json())
+                .then(handleLoginResponse)
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Login Error!")
+                });
+        }
+    </script>
+    </body>
+</html>
+

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <title>Feature List</title>
+        <style>
+            /* Custom styles */
+            body {
+                padding: 20px;
+            }
+        </style>
+    </head>
+    <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light justify-content-lg-between">
+        <a class="navbar-brand" href="/map/">Feature Map</a>
+        <button class="btn btn-outline-danger float-right my-2 my-sm-0"
+                onclick="logOut()">LogOut</button>
+    </nav>
+    <h1 class="text-center">Feature List</h1>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Color</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="featureTableBody">
+        <!-- Features will be dynamically added here -->
+        </tbody>
+    </table>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center" id="paginationContainer">
+            <li class="page-item" id="prevButtonContainer">
+                <a class="page-link" href="#" id="prevButton" disabled>Previous</a>
+            </li>
+            <li class="page-item" id="nextButtonContainer">
+                <a class="page-link" href="#" id="nextButton" disabled>Next</a>
+            </li>
+        </ul>
+    </nav>
+
+    <script>
+        // Fetch the initial page of features
+        fetchFeatures('http://127.0.0.1:8000/main/features/');
+
+
+        // Function to fetch and display features
+        function fetchFeatures(url) {
+
+            let token = localStorage.access;
+
+            if (token === null) {
+                location.href = "{% url 'login-view' %}";
+            }
+
+            const headers = {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            };
+
+            fetch(url,
+            {
+                    method: 'GET',
+                    headers: headers,
+                }
+            )
+                .then(response => response.json())
+                .then(responseJson => {
+                    let data = responseJson.data
+                    if (data && data.results) {
+                        displayFeatures(data.results);
+
+                        // Update pagination buttons and URLs
+                        nextPageUrl = data.next;
+                        prevPageUrl = data.previous;
+                        updatePaginationButtons();
+                    } else {
+                        console.error('Invalid response format.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error.message);
+                });
+        }
+
+        // Function to display features
+        function displayFeatures(features) {
+            const featureTableBody = document.getElementById('featureTableBody');
+            featureTableBody.innerHTML = '';
+
+            for (const feature of features) {
+                const row = document.createElement('tr');
+
+                const idCell = document.createElement('td');
+                idCell.textContent = feature.id;
+                row.appendChild(idCell);
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = feature.name;
+                row.appendChild(nameCell);
+
+                const colorCell = document.createElement('td');
+                colorCell.textContent = feature.color;
+                row.appendChild(colorCell);
+
+                const actionsCell = document.createElement('td');
+                const editLink = document.createElement('a');
+                editLink.className = "btn btn-primary";
+                editLink.href = "/features_edit/" + feature.id;
+                editLink.textContent = 'Edit';
+                actionsCell.appendChild(editLink);
+                row.appendChild(actionsCell);
+
+                featureTableBody.appendChild(row);
+            }
+        }
+
+        // Function to update pagination buttons
+        function updatePaginationButtons() {
+            const prevButtonContainer = document.getElementById('prevButtonContainer');
+            const nextButtonContainer = document.getElementById('nextButtonContainer');
+
+            const prevButton = document.getElementById('prevButton');
+            const nextButton = document.getElementById('nextButton');
+
+            console.log(nextPageUrl);
+            if (nextPageUrl) {
+                nextButton.disabled = false;
+                nextButton.href = '#';
+                nextButton.addEventListener('click', () => {
+                    fetchFeatures(nextPageUrl);
+                });
+                nextButtonContainer.style.display = 'block';
+            } else {
+                nextButton.disabled = true;
+                nextButton.removeEventListener('click', () => {
+                    fetchFeatures(nextPageUrl);
+                });
+                nextButtonContainer.style.display = 'none';
+            }
+
+            if (prevPageUrl) {
+                prevButton.disabled = false;
+                prevButton.href = '#';
+                prevButton.addEventListener('click', () => {
+                    fetchFeatures(prevPageUrl);
+                });
+                prevButtonContainer.style.display = 'block';
+            } else {
+                prevButton.disabled = true;
+                prevButton.removeEventListener('click', () => {
+                    fetchFeatures(prevPageUrl);
+                });
+                prevButtonContainer.style.display = 'none';
+            }
+        }
+
+        function handleLogoutResponse(response) {
+            console.log(localStorage.refresh);
+
+            location.href = `http://${location.hostname}:${location.port}`
+        }
+
+        function logOut(){
+
+            let token = localStorage.access;
+
+            if (token === null) {
+                location.href = "{% url 'login-view' %}";
+            }
+
+            const headers = {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            };
+
+            fetch('/api/logout/', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({'refresh': localStorage.refresh}),
+            })
+                .then(response => response.json())
+                .then(handleLogoutResponse)
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Login Error!")
+                });
+        }
+    </script>
+    </body>
+</html>
