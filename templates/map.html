@@ -58,6 +58,7 @@
     <script src="https://cdn.jsdelivr.net/npm/ol@v7.4.0/dist/ol.js"></script>
     <script>
         // Create a map with default view
+        /*
         const map = new ol.Map({
             target: 'map',
             view: new ol.View({
@@ -65,143 +66,206 @@
                 zoom: 2
             })
         });
-        // Create a Vector Source to hold the features
-        const vectorSource = new ol.source.Vector();
 
-        // Create a Vector Layer with the Vector Source
-        const vectorLayer = new ol.layer.Vector({
-            source: vectorSource
-        });
+         */
+        $(document).ready(function () {
 
-        // Add the Vector Layer to the Map
-        map.addLayer(vectorLayer);
+            let base_url = '/main/features/';
 
-        function fetchFeatures(url) {
-            let token = localStorage.access;
+            const map = new ol.Map({
+                layers: [
+                    new ol.layer.Tile({
+                        source: new ol.source.OSM(),
+                    }),
+                ],
+                target: 'map',
+                view: new ol.View({
+                    center: [0, 0],
+                    zoom: 2,
+                }),
+            });
 
-            if (token === null) {
-                location.href = "{% url 'login-view' %}";
-            }
 
-            const headers = {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            };
+            // Create a Vector Source to hold the features
+            const vectorSource = new ol.source.Vector();
 
-            fetch(url,
-                {
-                    method: 'GET',
-                    headers: headers,
+            // Create a Vector Layer with the Vector Source
+            const vectorLayer = new ol.layer.Vector({
+                source: vectorSource
+            });
+
+            // Add the Vector Layer to the Map
+            map.addLayer(vectorLayer);
+
+            function fetchFeatures(url) {
+                let token = localStorage.access;
+
+                if (token === null) {
+                    location.href = "{% url 'login-view' %}";
                 }
-            )
-                .then(response => response.json())
-                .then(jsonResponse => {
-                    let data = jsonResponse.data;
-                    if (data && data.results) {
 
-                        vectorSource.clear()
-                        // Process and add the features to the Vector Source
-                        addFeaturesToSource(data.results);
-                        // totalPages = Math.ceil(data.count / pageSize);
+                const headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                };
 
-                        nextPageUrl = data.next;
-                        prevPageUrl = data.previous;
-                        updatePaginationButtons();
-                    } else {
-                        console.error('Invalid response format.');
+                fetch(url,
+                    {
+                        method: 'GET',
+                        headers: headers,
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error.message);
-                });
-        }
+                )
+                    .then(response => response.json())
+                    .then(jsonResponse => {
+                        let data = jsonResponse.data;
+                        if (data && data.results) {
 
-        // Function to process and add features to the Vector Source
-        function addFeaturesToSource(features) {
+                            vectorSource.clear()
+                            // Process and add the features to the Vector Source
+                            addFeaturesToSource(data.results);
+                            // totalPages = Math.ceil(data.count / pageSize);
 
-            const format = new ol.format.GeoJSON();
-            for (const feature of features) {
-                const olFeature = format.readFeature(feature.features);
-                olFeature.setStyle(createFeatureStyle(feature.name, feature.color));
-                vectorSource.addFeature(olFeature);
+                            nextPageUrl = data.next;
+                            prevPageUrl = data.previous;
+                            updatePaginationButtons();
+                        } else {
+                            console.error('Invalid response format.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error.message);
+                    });
             }
 
-            // Fit the map view to the extent of the features
-            const extent = vectorSource.getExtent();
-            map.getView().fit(extent, { padding: [50, 50, 50, 50] });
-        }
+            // Function to process and add features to the Vector Source
+            function addFeaturesToSource(features) {
 
-        function createFeatureStyle(labelText, color) {
-            return new ol.style.Style({
-                fill: new ol.style.Fill({
-                    //color: 'rgba(255, 0, 0, 0.6)'
-                    color: color // Set the fill color for the feature
-                }),
-                stroke: new ol.style.Stroke({
-                    color: '#fff',
-                    width: 2
-                }),
-                text: new ol.style.Text({
-                    text: labelText,
+                const format = new ol.format.GeoJSON();
+                for (const feature of features) {
+                    const olFeature = format.readFeature(feature.features);
+                    olFeature.ol_uid = feature.id;
+                    olFeature.setStyle(createFeatureStyle(feature.name, feature.color));
+                    vectorSource.addFeature(olFeature);
+                }
+
+                // Fit the map view to the extent of the features
+                const extent = vectorSource.getExtent();
+                map.getView().fit(extent, { padding: [50, 50, 50, 50] });
+            }
+
+            function createFeatureStyle(labelText, color) {
+                return new ol.style.Style({
                     fill: new ol.style.Fill({
-                        color: '#000'
+                        //color: 'rgba(255, 0, 0, 0.6)'
+                        color: color // Set the fill color for the feature
                     }),
                     stroke: new ol.style.Stroke({
                         color: '#fff',
                         width: 2
                     }),
-                    font: '14px Arial',
-                    offsetY: -12, // Adjust the label position
-                    textAlign: 'center',
-                    textBaseline: 'middle'
-                })
+                    text: new ol.style.Text({
+                        text: labelText,
+                        fill: new ol.style.Fill({
+                            color: '#000'
+                        }),
+                        stroke: new ol.style.Stroke({
+                            color: '#fff',
+                            width: 2
+                        }),
+                        font: '14px Arial',
+                        offsetY: -12, // Adjust the label position
+                        textAlign: 'center',
+                        textBaseline: 'middle'
+                    })
+                });
+            }
+
+            // Function to update the pagination UI
+            function updatePaginationButtons() {
+                const prevButtonContainer = document.getElementById('prevButtonContainer');
+                const nextButtonContainer = document.getElementById('nextButtonContainer');
+
+                const prevButton = document.getElementById('prevButton');
+                const nextButton = document.getElementById('nextButton');
+
+                if (nextPageUrl) {
+                    nextButton.disabled = false;
+                    nextButton.href = '#';
+                    nextButton.addEventListener('click', () => {
+                        fetchFeatures(nextPageUrl);
+                    });
+                    nextButtonContainer.style.display = 'block';
+                } else {
+                    nextButton.disabled = true;
+                    nextButton.removeEventListener('click', () => {
+                        fetchFeatures(nextPageUrl);
+                    });
+                    nextButtonContainer.style.display = 'none';
+                }
+
+                if (prevPageUrl) {
+                    prevButton.disabled = false;
+                    prevButton.href = '#';
+                    prevButton.addEventListener('click', () => {
+                        fetchFeatures(prevPageUrl);
+                    });
+                    prevButtonContainer.style.display = 'block';
+                } else {
+                    prevButton.disabled = true;
+                    prevButton.removeEventListener('click', () => {
+                        fetchFeatures(prevPageUrl);
+                    });
+                    prevButtonContainer.style.display = 'none';
+                }
+            }
+
+            let modifyInteraction = new ol.interaction.Modify({
+                source: vectorSource,
             });
-        }
+            map.addInteraction(modifyInteraction);
 
-        // Function to update the pagination UI
-        function updatePaginationButtons() {
-            const prevButtonContainer = document.getElementById('prevButtonContainer');
-            const nextButtonContainer = document.getElementById('nextButtonContainer');
 
-            const prevButton = document.getElementById('prevButton');
-            const nextButton = document.getElementById('nextButton');
+            modifyInteraction.on('modifyend', function (event) {
+                let modifiedFeatures = event.features.getArray();
+                modifiedFeatures.forEach(function (feature) {
+                    // Send the updated feature to the server for saving
+                    let modifiedGeoJSON = new ol.format.GeoJSON().writeFeatureObject(feature, {
+                        featureProjection: 'EPSG:4326',  // Change to your desired projection
+                    });
+                    let requestData = {
+                        'features': modifiedGeoJSON['geometry']
+                    }
+                    let token = localStorage.access;
+                    const headers = {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    };
+                    fetch(`/main/features/${feature.ol_uid}/`, {  // Replace with your API endpoint
+                        method: 'PATCH',
+                        headers: headers,
+                        body: JSON.stringify(requestData),
+                    })
+                        .then(function (response) {
+                            if (response.ok) {
+                                console.log('Feature updated successfully');
+                            } else {
+                                console.error('Error updating feature:', response.statusText);
+                            }
+                        })
+                        .catch(function (error) {
+                            console.error('Error updating feature:', error);
+                        });
+                });
 
-            if (nextPageUrl) {
-                nextButton.disabled = false;
-                nextButton.href = '#';
-                nextButton.addEventListener('click', () => {
-                    fetchFeatures(nextPageUrl);
-                });
-                nextButtonContainer.style.display = 'block';
-            } else {
-                nextButton.disabled = true;
-                nextButton.removeEventListener('click', () => {
-                    fetchFeatures(nextPageUrl);
-                });
-                nextButtonContainer.style.display = 'none';
-            }
+            });
 
-            if (prevPageUrl) {
-                prevButton.disabled = false;
-                prevButton.href = '#';
-                prevButton.addEventListener('click', () => {
-                    fetchFeatures(prevPageUrl);
-                });
-                prevButtonContainer.style.display = 'block';
-            } else {
-                prevButton.disabled = true;
-                prevButton.removeEventListener('click', () => {
-                    fetchFeatures(prevPageUrl);
-                });
-                prevButtonContainer.style.display = 'none';
-            }
-        }
+            fetchFeatures(base_url);
+        });
 
         function handleLogoutResponse(response) {
-            console.log(localStorage.refresh);
-
-            location.href = `http://${location.hostname}:${location.port}`
-        }
+                localStorage.clear();
+                location.href = `http://${location.hostname}:${location.port}`
+            }
 
         function logOut(){
 
@@ -229,11 +293,6 @@
                 });
         }
 
-        $(document).ready(function () {
-
-            let base_url = 'http://127.0.0.1:8000/main/features/';
-            fetchFeatures(base_url);
-        });
     </script>
 </body>
 </html>

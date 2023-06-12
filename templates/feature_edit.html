@@ -49,7 +49,7 @@
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         };
-        fetch(`http://127.0.0.1:8000/main/features/${featureId}/`,
+        fetch(`/main/features/${featureId}/`,
             {
                 method: 'GET',
                 headers: headers,
@@ -70,6 +70,7 @@
 
         // Function to populate the form fields with feature data
         function populateForm(feature) {
+            console.log(feature);
             const nameInput = document.getElementById('nameInput');
             const colorInput = document.getElementById('colorInput');
 
@@ -91,7 +92,7 @@
             };
 
             // Send the updated feature data to the server
-            fetch(`http://127.0.0.1:8000/main/features/${featureId}/`, {
+            fetch(`/main/features/${featureId}/`, {
                 method: 'PATCH',
                 headers: headers,
                 body: JSON.stringify(updatedFeature)
